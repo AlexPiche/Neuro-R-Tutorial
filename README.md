@@ -37,6 +37,6 @@ To insert code in your file, click on "Insert" at the top of the top left panel.
 We need to install certain packages for today's tutorial. It can be done this way:
 
 ```{r}
-install.packages(c("tidyr", "reshape2"))
+install.packages(c("tidyr", "reshape2", "data.table"))
 ```
 
