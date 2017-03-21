@@ -1,0 +1,503 @@
+---
+title: "Tutorial"
+author: "Alexandre Piche"
+date: '2017-03-06'
+output:
+  pdf_document:
+    toc: true
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+# McGill wins $84 million grant for neuroscience
+
+Great opportunities for undergraduate students with a background in neuro and knowledge of statistics and statistical software!
+
+https://www.mcgill.ca/newsroom/channels/news/mcgill-wins-84-million-grant-neuroscience-262441
+
+# To Do Before the Tutorial
+
+## Download R
+
+https://cran.r-project.org/
+
+## Download R studio
+
+https://www.rstudio.com/products/rstudio/download/
+
+## Opening RStudio for the First Time
+
+On the right hand side there is the console. It is where we are going to communicate with R by submitting our instructions. 
+
+On the left hand side you have the Environment and the History in the top panel. The Environment lists all the variables that you currently have in your work space (i.e. that you can call in the console). History registers all the operations you have sent to R. You can browse it to see your previous commands in the console.
+
+## New Project
+
+I encourage creating a new project for the course as File -> New Project... -> New Directory -> Empty Project -> Directory Name -> R_Tutorial and browse to choose the folder where you want the project to be. It will be easier to manage your project and dataset. 
+
+## Rmarkdown
+
+You may export your code and graphs easily to MS word or pdf following these instructions.
+
+File -> New File -> R markdown -> select the output format to Word -> Ok -> Knit
+
+Note that what is written in MS Word is not connected to the console, and vice-versa. You will need to write the command in both places if you want to keep their workspaces the same.
+
+To insert code in your file click on "Insert" at the top of the top left panel.
+
+## Required Packages
+
+We need to install certain packages for today's tutorial. It can be done this way:
+
+```{r}
+# install.packages(c("tidyr", "reshape2"))
+```
+
+# Tutorial
+
+## Use R for Basic Operations
+
+Typying in the console we can use R as a basic calculator.
+
+```{r}
+1+2
+4/2
+5*(1+2)
+5^2
+```
+
+We can also assign value to variable, 
+
+```{r}
+my_variable <- 7
+```
+and access it by calling the variable name in the console.
+```{r}
+my_variable
+```
+
+## Basic Data Structure
+
+### Vectors
+
+We can create vectors using the "c" command, where "c" stands for combine.
+
+```{r}
+x <- c(6,7,8,9,10)
+x
+x[1]
+x[c(2,4)]
+x*2
+```
+
+```{r}
+x <- 1:7
+x
+```
+
+Vectors in R are more general than their mathematical equivalent. They can hold different type of data e.g. string or level. 
+
+```{r}
+y <- c("hello", "world")
+y
+```
+
+However, all elements will be coerce to the same type, they are coerce to string in the following case.
+
+```{r}
+y <- c(1, "hello")
+y
+```
+
+
+### Dataframe
+
+Usually, we will have to load our own datasets in R using the "Import Dataset" command in the Environment panel, more on that later. For simplicity, we will now experiment on a build-in dataset in R studio named "mtcars". Using the command "head(mtcars)" let us access the first 6 records of the dataset and their names.
+
+```{r}
+dim(mtcars)
+head(mtcars)
+```
+
+We can use vectors to assess different rows and columns.
+
+```{r}
+mtcars[1:4, c(1,4)]
+```
+
+
+Let say that we are interested in the median miles per gallon (mpg) in this dataset. We can use the command "median(mtcars\$mpg)", where "mtcars" is the dataset and "mpg" is the column of interest that we accessed with the dollar sign operator "\$".
+
+```{r}
+mtcars$mpg
+median(mtcars$mpg)
+mean(mtcars$mpg)
+var(mtcars$mpg)
+```
+
+To have more information on a function, we can use the question mark before it e.g. "?mean".
+
+## Data Cleaning
+
+Most of the analysis consist of data cleaning. Here is an example of some manipulation that you might be asked to do.
+
+   #  Attribute                     Description
+   -- -----------------------------------------
+   1. mpg -	Miles/(US) gallon
+   2. cyl -	Number of cylinders
+   3. disp -	Displacement (cu.in.)
+   4. hp -	Gross horsepower
+   5. drat -	Rear axle ratio
+   6. wt -	Weight (1000 lbs)
+   7. qsec -	1/4 mile time
+   8. vs -	V/S
+   9. am -	Transmission (0 = automatic, 1 = manual)
+   10. gear -	Number of forward gears
+   11. carb -	Number of carburetors
+
+```{r}
+str(mtcars)
+```
+
+Should the number of cylinders and the weight be both considered as numeric variable? Weight is a continuous variable while the number of cylinders is categorical e.g. 4,6 or 8 cylinders.
+
+```{r}
+mtcars$cyl <- factor(mtcars$cyl)
+
+mtcars$vs <- factor(mtcars$vs)
+
+mtcars$am <- factor(mtcars$am)
+
+mtcars$gear <- factor(mtcars$gear)
+
+mtcars$carb <- factor(mtcars$carb)
+
+str(mtcars)
+```
+
+It might be annoying to have to remember that 0 stands for automatic and 1 manual transmission. Let us fix it.
+
+```{r}
+levels(mtcars$am) <- c("automatic", "manual")
+str(mtcars)
+```
+
+
+## Exploring the Data
+
+### Graphing with ggplot2
+
+#### Exploring the Variability in a Dataset
+
+Suppose being interested in the distribution of mpg. The first argument is the dataset name, the second is "aes" (standing for aesthetic) which that the dependent and indepdent variables.
+
+We then add a layer to the plot using the "+" sign e.g. the density:
+
+```{r}
+# To use the ggplot2 library we have to call it with the library command
+# One could think of the command "install.packages" as buying shoes and "library" as putting them on.
+library(ggplot2)
+
+ggplot(mtcars, aes(mpg)) + geom_density(fill="lightblue")
+```
+
+The number of cylinders in a car might impact its consumption. Let us stratify the densities by cylinders. Note the transparency of the plot using the parameter alpha.
+
+```{r}
+ggplot(mtcars, aes(mpg, fill=cyl)) + geom_density(alpha=.5)
+```
+
+It might be useful to be able to see every observation on the graph. We can do so by adding the layer: geom_jitter.
+
+```{r}
+p <- ggplot(mtcars, aes(cyl, mpg, fill=cyl, color=cyl)) + geom_violin() + coord_flip()
+p
+p + geom_jitter()
+```
+
+#### Relationship Across Variables
+
+Using the regression, we can clearly see that the heavier a vehicule is the worst Miles per gallon it is going to have.
+
+```{r}
+ggplot(mtcars, aes(wt, mpg)) + stat_smooth(method="lm")
+```
+
+Furthermore, we can divide the regression by the number of cylinders. We can see that the negative correlation is still present, but is not the same for every category.
+
+```{r}
+p <- ggplot(mtcars, aes(wt, mpg, color=cyl)) + stat_smooth(method="lm") 
+p
+p + geom_point()
+```
+
+#### Complex Patterns
+
+We can stratify the data to observe more complex patterns.
+
+```{r}
+p <- ggplot(mtcars, aes(hp, mpg, color=am, shape=am)) + geom_point() 
+p <- p + theme(legend.position="top")
+p
+p + facet_grid(gear~cyl)
+```
+
+
+### dplyr
+
+The package dplyr is very fast for large datasets. It has main functions/verbs to work with data.table that we are going to explore here. The functions are filter, select, mutate, arrange, and summarise.
+
+
+```{r, message=F}
+library(dplyr)
+```
+
+#### Group by and Summarise
+
+```{r}
+summarise(mtcars, mean_mpg=mean(mpg), mean_wt=mean(wt))
+temp <- group_by(mtcars, cyl)
+temp1 <- summarise(temp, mean_mpg=mean(mpg), mean_wt=mean(wt))
+temp1
+
+# one could alternatively chain the operation using the pipe operation %>%
+# mtcars %>% group_by(cyl) %>% summarise(mean_mpg=mean(mpg), mean_wt=mean(wt))
+```
+
+
+
+
+#### Select
+
+```{r}
+mtcars %>% select(mpg, cyl) %>% head()
+```
+
+#### Arrange
+
+```{r}
+mtcars %>% select(cyl,am,wt) %>% arrange(cyl,am,wt) %>% head()
+```
+
+#### Mutate
+
+Let's define heavy as more than 3000 lbs.
+
+```{r}
+temp1 <- mtcars %>% mutate(heavy=factor(ifelse(wt < 3, "Light", "Heavy")))
+str(temp1)
+```
+
+#### Filter
+
+```{r}
+temp1 %>% filter(heavy=="Heavy") %>% head()
+```
+
+
+## Real World Problems
+
+### Parkinsons
+
+We will try to predict the UPDRS score of the patient given their age, gender and different measures.
+
+#### Attribute Information:
+
+   #  Attribute                     Description
+   -- -----------------------------------------
+   1. subject# - Integer that uniquely identifies each subject
+   2. age - Subject age
+   3. sex - Subject gender '0' - male, '1' - female
+   4. test_time - Time since recruitment into the trial. 
+      The integer part is the number of days since recruitment.
+   5. motor_UPDRS - Clinician's motor UPDRS score, linearly interpolated
+   6. total_UPDRS - Clinician's total UPDRS score, linearly interpolated
+   7. Jitter(%),Jitter(Abs),Jitter:RAP,Jitter:PPQ5,Jitter:DDP - 
+      Several measures of variation in fundamental frequency
+   8. Shimmer,Shimmer(dB),Shimmer:APQ3,Shimmer:APQ5,Shimmer:APQ11,Shimmer:DDA -
+      Several measures of variation in amplitude
+   9. NHR,HNR - Two measures of ratio of noise to tonal components in the voice
+   10. RPDE - A nonlinear dynamical complexity measure
+   11. DFA - Signal fractal scaling exponent
+   12. PPE - A nonlinear measure of fundamental frequency variation 
+
+#### data.table
+
+The data.table package provides a very efficient back end for dplyr. I recommend using it if you are working with large datasets. Particularly "fread" to read in datasets. 
+
+```{r, message=F}
+library(data.table)
+```
+
+
+```{r}
+# A Tsanas, MA Little, PE McSharry, LO Ramig (2009)
+# 'Accurate telemonitoring of Parkinson.s disease progression by non-invasive speech tests',
+# url <- "https://archive.ics.uci.edu/ml/machine-learning-databases/
+# parkinsons/telemonitoring/parkinsons_updrs.data"
+
+#parkinson_dat <- fread(url)
+#names(parkinson_dat)[1] <- "subject"
+
+#write.csv(parkinson_dat, file="parkinson_dat.csv")
+
+parkinson_dat <- fread("parkinson_dat.csv")
+
+str(parkinson_dat)
+```
+
+
+```{r}
+parkinson_dat$sex <- factor(parkinson_dat$sex)
+levels(parkinson_dat$sex) <- c("male", "female")
+```
+
+Inspecting the distribution of subjects based on gender.
+
+```{r}
+parkinson_dat %>% distinct(subject, .keep_all = TRUE) %>% group_by(sex) %>%
+  summarise(count=n(), mean_age=mean(age))
+```
+
+Inspecting the distribution of older subjects based on gender.
+
+```{r}
+parkinson_dat_old <- parkinson_dat %>% filter(age >= 65)
+parkinson_dat_old %>% distinct(subject, .keep_all = TRUE) %>% group_by(sex) %>%
+  summarise(count=n(), mean_age=mean(age))
+```
+
+Inspecting the score distribution based on gender.
+
+```{r}
+library(ggplot2)
+ggplot(parkinson_dat, aes(sex, motor_UPDRS, fill=sex)) + geom_boxplot()
+```
+
+
+```{r}
+new_parkinson_dat <- parkinson_dat %>% group_by(subject) %>%
+  summarise(mean_motor_UPDRS = mean(motor_UPDRS), age=mean(age))
+new_parkinson_dat
+```
+
+
+
+Looking at the score distribution for people over/under 65 years old.
+
+
+```{r}
+new_parkinson_dat$old <- new_parkinson_dat$age >= 65
+ggplot(new_parkinson_dat, aes(old, mean_motor_UPDRS, fill=old)) +
+  geom_boxplot() #+ ggtitle("my title") + xlab("x lab") + ylab("y lab")
+```
+
+Looking at the score distribution of the first 6 subjects and filling the boxplot base don their age.
+
+```{r}
+parkinson_dat_sub <- subset(parkinson_dat, subject<=6)
+ggplot(parkinson_dat_sub, aes("", total_UPDRS, fill=age)) + geom_boxplot() +
+  facet_wrap(~subject, ncol = 3)
+```
+
+#### Advanced ggplot
+
+```{r}
+parkinson_dat_select <- parkinson_dat %>% select(total_UPDRS,PPE,DFA)
+head(parkinson_dat_select)
+library(reshape2)
+parkinson_dat_melt <- melt(parkinson_dat_select, id="total_UPDRS")
+head(parkinson_dat_melt)
+ggplot(parkinson_dat_melt, aes(value, total_UPDRS)) + stat_smooth(method = "lm") +
+  geom_point(alpha=0.15) + facet_wrap(~variable, scales="free",ncol=1)
+```
+
+#### Regression
+
+We can do a linear regression to predict the UPDR score from the age, sex, PPE, and DFA variables.
+
+```{r}
+mymodel <- lm(total_UPDRS~age+sex+PPE+DFA+0, parkinson_dat) # + 0 is fot no intercept, coherent with the paper from which the data comes from
+summary(mymodel)
+```
+
+### Breast Cancer
+
+We will classify the tumor into benign and malignant based on their thickness.
+
+#### Attribute Information:
+   #  Attribute                     Domain
+   -- -----------------------------------------
+   1. Sample code number            id number
+   2. Clump Thickness               1 - 10
+   3. Uniformity of Cell Size       1 - 10
+   4. Uniformity of Cell Shape      1 - 10
+   5. Marginal Adhesion             1 - 10
+   6. Single Epithelial Cell Size   1 - 10
+   7. Bare Nuclei                   1 - 10
+   8. Bland Chromatin               1 - 10
+   9. Normal Nucleoli               1 - 10
+   10. Mitoses                       1 - 10
+   11. Class:                        (2 for benign, 4 for malignant)
+
+
+```{r}
+#breast_cancer <- fread("https://archive.ics.uci.edu/ml/machine-learning-databases/breast-cancer-wisconsin/breast-cancer-wisconsin.data")
+#names(breast_cancer) <- c("id_number", "clump_thickness", "cell_size", "cell_shape", "marginal_adhesion", "single_epithelial", "bare_nuclei", "bland_chromatin", "normal_nucleoli", "mitoses", "class")
+#write.csv(breast_cancer, file="breast_cancer.csv")
+
+breast_cancer <- fread("breast_cancer.csv")
+str(breast_cancer)
+```
+
+```{r}
+breast_cancer$class <- factor(breast_cancer$class)
+levels(breast_cancer$class) <- c("benign", "malignant")
+str(breast_cancer)
+```
+
+Let us see how many tumor of each class is present in our dataset
+
+```{r}
+breast_cancer %>% group_by(class) %>% summarise(count=n())
+```
+
+We can look at the distribution of the clumb thickness using a barplot.
+
+```{r}
+ggplot(breast_cancer, aes(clump_thickness)) + geom_bar()
+```
+
+
+
+Using ggplot to inspect the distribution of the clump's thickness given the tumor's class.
+
+```{r}
+ggplot(breast_cancer, aes(class, clump_thickness, fill=class)) + geom_boxplot()
+```
+
+#### Classification
+
+Let us use a generalize linear model to classify the tumor into malignant and benign.
+
+```{r}
+model <- glm(class~clump_thickness, family = "binomial", data=breast_cancer)
+summary(model)
+```
+
+# Ressources
+
+## Datacamp
+
+https://www.datacamp.com/
+
+## R for Data Science
+
+http://r4ds.had.co.nz/
+
+## Advanced R
+
+http://adv-r.had.co.nz/
+
